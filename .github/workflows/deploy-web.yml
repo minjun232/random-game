@@ -1,0 +1,47 @@
+# 랜덤 게임 v2.0 (web/)을 빌드해 GitHub Pages에 올리는 워크플로
+# 저장소 Settings → Pages → Source를 "GitHub Actions"로 바꾼 뒤 main에 push하면 자동 배포됩니다.
+name: Deploy web to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+    paths: ["web/**", ".github/workflows/deploy-web.yml"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+      - name: Install trunk
+        run: |
+          curl -sSL https://github.com/trunk-rs/trunk/releases/download/v0.22.1/trunk-x86_64-unknown-linux-gnu.tar.gz | tar -xz -C /usr/local/bin
+      - name: Build
+        working-directory: web
+        # 프로젝트 페이지는 https://<계정>.github.io/<저장소>/ 아래에 열리므로 경로를 맞춰 준다
+        run: trunk build --release --public-url "/${{ github.event.repository.name }}/"
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: web/dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

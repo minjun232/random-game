@@ -1,0 +1,1 @@
+{ "version": "0.0.1", "configurations": [ { "name": "random-game-web", "runtimeExecutable": "powershell", "runtimeArgs": ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", "web/build.ps1", "-Serve"], "port": 8080 } ] }

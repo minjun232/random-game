@@ -1,0 +1,3 @@
+# 웹 빌드 결과물 (GitHub Actions에서 다시 빌드함)
+web/dist/
+web/target/
