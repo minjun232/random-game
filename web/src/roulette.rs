@@ -636,23 +636,23 @@ impl R {
 }
 
 // ---------------------------------------------------------------------------
-// 휠 그리기 (평면형 디자인)
+// 휠 그리기 (v1.2 RouletteWheelControl.OnRender와 같은 평면형 디자인)
 // ---------------------------------------------------------------------------
 fn draw_wheel(canvas: &web_sys::HtmlCanvasElement, w: &Wheel) {
     let Some((cw, ch, ctx)) = util::prepare_canvas(canvas) else { return };
     use std::f64::consts::PI;
     let rad = |d: f64| d * PI / 180.0;
     let cx = cw / 2.0;
-    let cy = ch / 2.0 + 8.0;
-    let radius = ((cw.min(ch)) / 2.0 - 26.0).max(60.0);
+    let cy = ch / 2.0 + 6.0;
+    let radius = ((cw.min(ch)) / 2.0 - 24.0).max(60.0);
 
-    // 바깥 링
+    // 바깥 링 (당첨 시 초록)
     ctx.begin_path();
-    let _ = ctx.arc(cx, cy, radius + 10.0, 0.0, PI * 2.0);
-    ctx.set_fill_style_str("#202229");
+    let _ = ctx.arc(cx, cy, radius + 8.0, 0.0, PI * 2.0);
+    ctx.set_fill_style_str("#111216");
     ctx.fill();
     ctx.set_line_width(2.0);
-    ctx.set_stroke_style_str(if w.win_hl { "#3DB47F" } else { "#30333D" });
+    ctx.set_stroke_style_str(if w.win_hl { "#6CCB9E" } else { "#2A2C33" });
     ctx.stroke();
 
     let font = |size: f64| format!("700 {}px {}", size, util::FONT_STACK);
@@ -696,12 +696,12 @@ fn draw_wheel(canvas: &web_sys::HtmlCanvasElement, w: &Wheel) {
                 ctx.set_fill_style_str(sl.color);
             }
             ctx.fill();
-            ctx.set_line_width(2.0);
-            ctx.set_stroke_style_str("rgba(17,18,22,0.85)");
+            ctx.set_line_width(1.5);
+            ctx.set_stroke_style_str("#111216");
             ctx.stroke();
             if is_win {
-                ctx.set_line_width(3.5);
-                ctx.set_stroke_style_str("#FFE9A3");
+                ctx.set_line_width(3.0);
+                ctx.set_stroke_style_str("#FFFFFF");
                 ctx.stroke();
             }
 
@@ -725,11 +725,21 @@ fn draw_wheel(canvas: &web_sys::HtmlCanvasElement, w: &Wheel) {
             let _ = ctx.translate(cx + tr * rad(mid).cos(), cy + tr * rad(mid).sin());
             let _ = ctx.rotate(rad(if flip { mid + 180.0 } else { mid }));
             ctx.set_font(&font(size));
-            ctx.set_fill_style_str("rgba(10,11,14,0.55)");
+            ctx.set_fill_style_str("rgba(0,0,0,0.43)");
             let _ = ctx.fill_text(&label, 1.0, 1.0);
             ctx.set_fill_style_str("#FFFFFF");
             let _ = ctx.fill_text(&label, 0.0, 0.0);
             ctx.restore();
+        }
+        // 가장자리 작은 점 (칸마다 하나)
+        if n <= 24 {
+            ctx.set_fill_style_str("rgba(255,255,255,0.59)");
+            for p in 0..n {
+                let d = rad(w.rot - 90.0 + p as f64 * slice_deg);
+                ctx.begin_path();
+                let _ = ctx.arc(cx + (radius + 4.0) * d.cos(), cy + (radius + 4.0) * d.sin(), 2.0, 0.0, PI * 2.0);
+                ctx.fill();
+            }
         }
     }
 
@@ -737,10 +747,10 @@ fn draw_wheel(canvas: &web_sys::HtmlCanvasElement, w: &Wheel) {
     let hub = (radius * 0.23).max(36.0);
     ctx.begin_path();
     let _ = ctx.arc(cx, cy, hub, 0.0, PI * 2.0);
-    ctx.set_fill_style_str("#16171C");
+    ctx.set_fill_style_str("#111216");
     ctx.fill();
-    ctx.set_line_width(3.0);
-    ctx.set_stroke_style_str(if w.win_hl { "#3DB47F" } else { "#5B6CF0" });
+    ctx.set_line_width(2.0);
+    ctx.set_stroke_style_str(if w.win_hl { "#6CCB9E" } else { "#3A3D46" });
     ctx.stroke();
     if active >= 0 {
         let name = util::truncate_chars(&w.slices[active as usize].name, 7);
@@ -757,8 +767,8 @@ fn draw_wheel(canvas: &web_sys::HtmlCanvasElement, w: &Wheel) {
     let _ = ctx.rotate(rad(w.kick));
     ctx.begin_path();
     ctx.move_to(0.0, 30.0);
-    ctx.line_to(-12.0, -6.0);
-    ctx.line_to(12.0, -6.0);
+    ctx.line_to(-13.0, -6.0);
+    ctx.line_to(13.0, -6.0);
     ctx.close_path();
     ctx.set_fill_style_str("#F4F4F6");
     ctx.fill();
@@ -769,6 +779,7 @@ fn draw_wheel(canvas: &web_sys::HtmlCanvasElement, w: &Wheel) {
     let _ = ctx.arc(0.0, 0.0, 5.0, 0.0, PI * 2.0);
     ctx.set_fill_style_str("#5B6CF0");
     ctx.fill();
+    ctx.stroke();
     ctx.restore();
 }
 

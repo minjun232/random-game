@@ -107,12 +107,14 @@ fn App() -> impl IntoView {
     provide_context(ActiveTab(active));
     provide_context(Modal(create_rw_signal(None)));
 
-    let tabs = ["🎡 연속 룰렛", "┣┫ 사다리 게임", "🎫 제비뽑기", "👥 팀 나누기"];
+    // v1.2 사이드바 + 페이지 제목 구조
+    let icons = ["🎡", "┣┫", "🎫", "👥"];
+    let names = ["연속 룰렛", "사다리 게임", "제비뽑기", "팀 나누기"];
     let hints = [
-        "Space 돌리기 · A 자동 · R 카운트 리셋 · Esc 입력창 나가기",
-        "참가자 이름 클릭: 개별 출발 · Space 다음 출발 · Esc 입력창 나가기",
-        "제비 카드 클릭: 직접 뽑기 · Space 랜덤 1개 뽑기 · Esc 입력창 나가기",
-        "팀 개수를 고르고 명단을 넣은 뒤 Space 또는 [팀 나누기]",
+        "단축키 — Space: 돌리기 · A: 자동 · R: 카운트 리셋 · Esc: 입력창 나가기",
+        "참가자 이름 클릭: 개별 사다리 출발 · Space: 다음 출발 · Esc: 입력창 나가기",
+        "제비 카드 클릭: 직접 뽑기 · Space: 랜덤 1개 뽑기 · Esc: 입력창 나가기",
+        "팀 개수를 고르고 명단을 넣은 뒤 Space 또는 [팀 나누기] 버튼을 누르세요",
     ];
 
     // 입력창에서 Esc → 입력창 밖으로 (단축키 복귀)
@@ -126,17 +128,31 @@ fn App() -> impl IntoView {
 
     view! {
         <div class="shell">
-            <header class="topbar">
-                <div class="brand">"랜덤 게임"</div>
+            <aside class="sidebar">
+                <div class="brand">
+                    <img src="favicon.ico" alt="" width="30" height="30"/>
+                    <div>
+                        <div class="brand-name">"랜덤 게임"</div>
+                        <div class="brand-sub">"Random Games"</div>
+                    </div>
+                </div>
+                <div class="nav-label">"게임"</div>
                 <nav class="tabs">
-                    {tabs.iter().enumerate().map(|(i, name)| view! {
+                    {names.iter().enumerate().map(|(i, name)| view! {
                         <button class="tab" class:active=move || active.get() == i
                             on:click=move |_| { active.set(i); util::blur_active(); }>
-                            {*name}
+                            <span class="tab-icon">{icons[i]}</span>{*name}
                         </button>
                     }).collect_view()}
                 </nav>
-                <div class="hint">{move || hints[active.get()]}</div>
+                <div class="version">"v2.0 · 파일 저장 없음"</div>
+            </aside>
+            <header class="page-head">
+                <span class="page-icon">{move || icons[active.get()]}</span>
+                <div class="page-titles">
+                    <h1>{move || names[active.get()]}</h1>
+                    <div class="hint">{move || hints[active.get()]}</div>
+                </div>
             </header>
             <main class="tab-body">
                 <div class="tab-pane" style:display=show(0)><roulette::RouletteTab/></div>
